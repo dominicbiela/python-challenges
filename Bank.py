@@ -1,45 +1,6 @@
 # """
 # Basic Object-Oriented Programming scenario of a bank
 # """
-# from datetime import date
-# import uuid
-# class User:
-#     def __init__(self, name: str, dob: date, postcode: str):
-#         self.name = name
-#         self.dob = dob
-#         self.postcode = postcode
-#         self.age = int((date.today() - self.dob).days/365.25)
-#
-# class Bank(User):
-#     def __init__(self, name: str, dob: date, postcode: str):
-#         super().__init__(name, dob, postcode)
-#         self.account = dict()
-#
-#     @staticmethod
-#     def _get_acct_number() -> int:
-#         acct_number = int(str(uuid.uuid4().int)[:10])
-#         return acct_number
-#
-#     @staticmethod
-#     def _generate_pin() -> int:
-#         pin_number = int(str(uuid.uuid4().int)[:4])
-#         return pin_number
-#
-#     def create_acct(self):
-#         acct_num = self._get_acct_number()
-#         pin = self._generate_pin()
-#         self.account[acct_num] = pin
-#         print('Welcome to Biela Bank')
-#         print(f'Your Account Number is {acct_num}')
-#         print(f'With PIN number {pin}')
-#
-#
-#     def __repr__(self):
-#         class_name = type(self).__name__
-#         return f'{class_name}({self.name}, {self.age}, {self.postcode})'
-#
-# bank = Bank('Adam Bond',date(1992,1,4),'TS6 8TD')
-# print(bank.create_acct())
 import uuid
 from dataclasses import dataclass, field
 from getpass import getpass
@@ -50,21 +11,27 @@ from typing import Dict, Tuple, Callable, ClassVar
 
 class Menu:
     MENU: ClassVar[Tuple[Tuple[str, Callable[['Menu'], bool]], ...]]
+    """
+     example = (('Exit', exit),
+                ('Create an account', create_account),
+                ('Log into an account', log_in),
+                )
+     """
 
     def screen(self):
-        prompt = '\n'.join(f'{i}. {name}' for i, (name, fun) in enumerate(self.MENU)) + '\n'
+        prompt = '\n'.join(f'{i}. {name}' for i, (name, func) in enumerate(self.MENU)) + '\n'
 
         while True:
             choice = input(prompt)
 
             try:
-                name, fun = self.MENU[int(choice)]
+                name, func = self.MENU[int(choice)]
             except ValueError:
                 print('Invalid integer entered')
             except IndexError:
                 print('Choice out of range')
             else:
-                if fun(self):
+                if func(self):
                     break
 
 
@@ -102,7 +69,7 @@ class BankDetails(Account):
         return pin_number
 
     @classmethod
-    def generate(cls):
+    def generate(cls) -> 'BankDetails':
         return cls(
             email=cls.email,
             pwd=cls.pwd,
@@ -112,15 +79,24 @@ class BankDetails(Account):
         )
 
     def show_details(self):
-        print(
-            f"Your username: {self.email}\n"
-            f"Your account number: {self.acct}\n"
-            f"Your card number: {self.card}\n"
-            f"Your PIN: {self.pin}"
-        )
+        print("\n"
+              f"Your username: {self.email}\n"
+              f"Your account number: {self.acct}\n"
+              f"Your card number: {self.card}\n"
+              f"Your PIN: {self.pin}\n",
+              )
 
     def balance(self):
+        #TODO add balance as class parameter
         print('Balance: 0')
+
+    def deposit(self):
+        #TODO be able to increase balance parameter
+        pass
+
+    def withdraw(self):
+        #TODO be able to decrease balance but not below 0
+        pass
 
     def logout(self) -> bool:
         print('You have successfully logged out!')
@@ -133,6 +109,8 @@ class BankDetails(Account):
     MENU = (
         ('Exit', exit),
         ('Balance', balance),
+        ('Deposit', deposit),
+        ('Withdraw', withdraw),
         ('Log out', logout),
     )
 
@@ -155,18 +133,19 @@ class BankingSystem(Menu):
     def log_in(self):
         for _ in range(3):
             email = input('Enter your Email Address: ')
-            if email != self.accounts.get(email):
+            if email != Account.email:
                 print('Wrong email address')
                 break
 
             pwd = input('Enter your Password: ')
-            if pwd != self.accounts.get(pwd):
+            if pwd != Account.pwd:
                 print('Wrong Password')
                 sleep(2)
                 break
             else:
                 print('You have successfully logged in!')
-                Account.screen(self)
+                bank = list(self.accounts.values())[0]
+                bank.screen()
                 break
 
     def exit(self) -> bool:
