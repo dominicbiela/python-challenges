@@ -23,7 +23,6 @@ class Menu:
 
         while True:
             choice = input(prompt)
-
             try:
                 name, func = self.MENU[int(choice)]
             except ValueError:
@@ -86,17 +85,30 @@ class BankDetails(Account):
               f"Your PIN: {self.pin}\n",
               )
 
-    def balance(self):
-        #TODO add balance as class parameter
-        print('Balance: 0')
+
+@dataclass(kw_only=True)
+class Balance(BankDetails):
+    balance: float = 0.00
+
+    def print_balance(self):
+        print(f'Balance: £{self.balance}')
 
     def deposit(self):
-        #TODO be able to increase balance parameter
-        pass
+        amount = float(input('How much would you like to deposit? '))
+        if amount < 0:
+            print('Deposits can not be negative')
+        else:
+            self.balance += amount
+        print(f'Balance: ${self.balance}')
 
     def withdraw(self):
-        #TODO be able to decrease balance but not below 0
-        pass
+        amount = float(input('How much would you like to withdraw? '))
+        if amount > self.balance:
+            print("You do not have enough funds")
+            print(f'Balance: ${self.balance}')
+        else:
+            self.balance -= amount
+            print(f'Balance: £{self.balance}')
 
     def logout(self) -> bool:
         print('You have successfully logged out!')
@@ -108,7 +120,7 @@ class BankDetails(Account):
 
     MENU = (
         ('Exit', exit),
-        ('Balance', balance),
+        ('Balance', print_balance),
         ('Deposit', deposit),
         ('Withdraw', withdraw),
         ('Log out', logout),
@@ -125,7 +137,7 @@ class BankingSystem(Menu):
         print('Please enter a valid email address and password')
         Account.acct_details()
         if Account.email:
-            account = BankDetails.generate()
+            account = Balance.generate()
             print('Your account has been created')
             account.show_details()
             self.accounts[account.card] = account
